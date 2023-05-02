@@ -1,8 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
+  reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "dadialstorage.blob.core.windows.net",
+        port: ""
+      }
+    ]  
+  }
 }
 
 module.exports = nextConfig
