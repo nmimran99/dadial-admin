@@ -7,19 +7,14 @@ import axios from "axios";
 import ClickAwayListener from "./misc/ClickAwayListener"
 import { useSession } from "next-auth/react";
 import constants from "../../public/constants.json"
+import { ISize, ITag } from "@/types";
 
 type DetailsState = {
     images: any;
     title: string;
     description: string;
-    tags: string[];
-    variants: [];
-}
-
-type VariantsState = {
-    id: 0;
-    size: string;
-    color: string;
+    tags: ITag[];
+    sizes: ISize[];
 }
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
@@ -33,7 +28,10 @@ const CreateNewProduct = () => {
         title: "",
         description: "",
         tags: [],
-        variants: []
+        sizes: [{
+            size: "One Size",
+            quantity: 0
+        }]
     })
 
     const handleUploadImages = (e: ChangeEvent<HTMLInputElement>) => {
@@ -53,8 +51,12 @@ const CreateNewProduct = () => {
         setDetails({ ...details, [field]: e.target.value })
     }
 
-    const handleModifyTags = (tags: string[]) => {
+    const handleModifyTags = (tags: ITag[]) => {
         setDetails({ ...details, tags })
+    }
+
+    const handleModifySizes = (sizes) => {
+        setDetails({ ...details, sizes })
     }
 
     return (
@@ -111,142 +113,142 @@ const CreateNewProduct = () => {
                     <div className="mx-2">
                         <div className="my-2 flex">
                             <div className="border w-96 rounded-lg p-2 ">
-                                <div className="text-sm font-bold">שם מוצר</div>
-                                <input type="text" onChange={handleChange("title")} className="outline-none w-11/12" value={details.title} />
+                                <div className="text-sm font-bold flex items-center opacity-70">
+                                    <img src="/icons/Keyboard.svg" className="w-5 h-5 ml-1 " />
+                                    שם מוצר
+                                </div>
+                                <input type="text" onChange={handleChange("title")} className="outline-none w-11/12 px-2 font-bold" value={details.title} />
                             </div>
                         </div>
                         <div className="my-4">
                             <div className="border w-96 rounded-lg p-2 ">
-                                <div className="text-sm font-bold">תיאור מוצר</div>
-                                <textarea rows={5} type="text" onChange={handleChange("description")} className="outline-none w-full" value={details.description} />
+                                <div className="text-sm font-bold flex items-center opacity-70">
+                                    <img src="/icons/TextAlignCenter.svg" className="w-5 h-5 ml-1" />
+                                    תיאור מוצר</div>
+                                <textarea rows={5} type="text" onChange={handleChange("description")} className="outline-none w-full px-2 font-bold" value={details.description} />
                             </div>
                         </div>
                     </div>
                     <Tags selectedTags={details.tags} handleModifyTags={handleModifyTags} />
                 </div>
-                <Variants />
+                <Sizes sizes={details.sizes} handleModifySizes={handleModifySizes} />
             </div>
         </Modal>
     )
 }
 
-const Variants = () => {
-    const [variants, setVariants] = useState<VariantsState[]>([{
-        id: 0,
-        size: "one-Size",
-        color: "#FF0000"
-    }]);
+const Sizes = ({ sizes, handleModifySizes }: { sizes: ISize[]; handleModifySize: () => void }) => {
 
-    const [select, setSelect] = useState<string | null | number[]>(["", null]);
+    const tagInput = useRef();
+    const [select, setSelect] = useState<string>("");
 
-    const handleSelect = (type: string | null | number[]) => (e) => {
-        setSelect(type);
+    const handleSelect = (s) => () => {
+        setSelect(s)
     }
 
-    const handleChangeColor = (variantId, color) => (e) => {
-        setVariants(vars => vars.map(v => v.id === variantId ? { ...v, color } : v))
-        setSelect(["", null]);
+    const handleSelectSize = (prevSize, newSize) => () => {
+        let newSizes = sizes.map((s) => s.size === prevSize ? { ...s, size: newSize } : s)
+        handleModifySizes(newSizes);
+        handleSelect(null);
     }
 
-    const handleChangeSize = (variantId, size) => (e) => {
-        setVariants(vars => vars.map(v => v.id === variantId ? { ...v, size } : v))
-        setSelect(["", null]);
+    const handleUpdateQuantity = (size, quantity) => () => {
+        let newSizes = sizes.map((s) => s.size === size ? { ...s, quantity } : s)
+        handleModifySizes(newSizes);
     }
 
-    const handleAddVariant = () => {
-        setVariants([...variants, {
-            id: variants.length,
-            size: "",
-            color: ""
-        }])
+    const handleAddSize = () => {
+        handleModifySizes([...sizes, { size: getAvailableSizes()[0], quantity: 0 }]);
     }
 
-    return <div className="my-4">
-        <div className="text-2xl font-bold px-4">
-            צבעים ומידות
-        </div>
-        <div>
-            {
-                variants.map((variant, i) =>
-                    <div className="flex">
-                        <div className="m-2 relative">
-                            <div className="border w-48 rounded-lg p-2">
-                                <div className="text-sm font-bold">צבע</div>
-                                <div className="flex justify-between items-center h-7">
-                                    <div className="flex justify-center items-center pr-1">
-                                        {
-                                            variant.color &&
-                                            <>
-                                                <div className="flex border border-2 border-gray-400 rounded-full p-0.5">
-                                                    <div style={{ backgroundColor: variant.color }} className="w-3 h-3 rounded-full "></div>
-                                                </div>
-                                                <div className="px-1 font-bold">{constants.colors.find(c => c.hex === variant.color)?.name}</div>
-                                            </>
-                                        }
+    const handleRemoveSize = (size: string) => () => {
+        let newSizes = sizes.filter((s) => s.size === size ? false : true)
+        handleModifySizes(newSizes);
+    }
+
+    const getAvailableSizes = () => {
+        return constants.size
+            .filter(ss => !sizes.find(sz => sz.size === ss))
+    }
+
+    return (
+        <div className="px-2">
+            <div className="text-2xl font-bold">מידות</div>
+            <div>
+                {
+                    sizes.map((s, i) =>
+                        <div className="flex my-2" key={i}>
+                            <div className="relative" key={i}>
+                                <div className="border w-40 rounded-lg p-2 " ref={tagInput}>
+                                    <div className="text-sm font-bold flex items-center opacity-70">
+                                        <img src="/icons/Ruler.svg" className="w-5 h-5 ml-1" />
+                                        מידה
                                     </div>
-                                    <button onClick={handleSelect(["color", variant.id])}>
-                                        <img src="/icons/CaretDown.svg" className="w-4 h-4" />
-                                    </button>
+                                    <div className="flex justify-between items-center">
+                                        <div className="px-2 font-bold text-sm px-2 py-0.5">
+                                            {s.size}
+                                        </div>
+                                        <button onClick={handleSelect(s.size)} >
+                                            <img src="/icons/CaretDown.svg" className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                                {
+                                    select === s.size &&
+                                    <ClickAwayListener onClickAway={handleSelect(null)}>
+                                        <div className="w-40 max-h-52 border rounded-lg absolute top-16 z-10 bg-white overflow-y-auto">
+                                            {
+                                                getAvailableSizes()
+                                                    .map((sz, idx) =>
+                                                        <button key={idx} className="px-4 py-2 font-bold w-full hover:bg-gray-200 cursor-pointer text-right text-sm"
+                                                            onClick={handleSelectSize(s.size, sz)}
+                                                        >
+                                                            {sz}
+                                                        </button>)
+                                            }
+                                        </div>
+                                    </ClickAwayListener>
+                                }
+                            </div>
+                            <div className="border w-40 rounded-lg p-2 mx-2" ref={tagInput}>
+                                <div className="text-sm font-bold flex items-center opacity-70">
+                                    <img src="/icons/CirclesThree.svg" className="w-5 h-5 ml-1" />
+                                    כמות
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <div className="px-2 font-bold text-sm px-2 py-0.5">
+                                        {s.quantity}
+                                    </div>
+                                    <div className="flex">
+                                        <button onClick={handleUpdateQuantity(s.size, s.quantity - 1)}
+                                            disabled={s.quantity === 0}
+                                            className="disabled:opacity-50"
+                                        >
+                                            <img src="/icons/MinusCircle.svg" className="w-6 h-6" />
+                                        </button>
+                                        <button onClick={handleUpdateQuantity(s.size, s.quantity + 1)}>
+                                            <img src="/icons/PlusCircle.svg" className="w-6 h-6" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            {
-                                select[0] === "color" && select[1] === variant.id &&
-                                <ClickAwayListener onClickAway={handleSelect(["", null])} >
-                                    <div className="border rounded-xl w-48 mt-2 absolute z-10 bg-white h-52 overflow-y-auto py-2">
-                                        {
-                                            constants.colors.map((c, i) => <button className="flex items-center px-2 h-9 w-full hover:bg-gray-200 "
-                                                onClick={handleChangeColor(variant.id, c.hex)}
-                                                key={i}
-                                            >
-                                                <div className="flex border border-2 border-gray-400 rounded-full p-0.5 ">
-                                                    <div style={{ backgroundColor: c.hex }} className="w-3 h-3 rounded-full"></div>
-                                                </div>
-                                                <div className="px-1 font-bold">{c.name}</div>
-                                            </button>)
-                                        }
-                                    </div>
-                                </ClickAwayListener>
-                            }
+                            <button className="rounded-full w-max h-max p-1 flex justify-between items-center text-white text-sm my-auto border border-red-500 border-2 mx-4"
+                            onClick={handleRemoveSize(s.size)}
+                            >
+                                <img src="/icons/RedTrash.svg" className="w-6 h-6" />
+                            </button>
                         </div>
-                        <div className="m-2 relative">
-                            <div className="border w-48 rounded-lg p-2">
-                                <div className="text-sm font-bold">מידה</div>
-                                <div className="flex justify-between items-center h-7">
-                                    <div className="flex justify-center items-center pr-1">
-                                        <div className="px-1 font-bold">{variant.size}</div>
-                                    </div>
-                                    <button onClick={["size", variant.id]}>
-                                        <img src="/icons/CaretDown.svg" className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </div>
-                            {
-                                select[0] === "size" && select[1] === variant.id &&
-                                <ClickAwayListener onClickAway={handleSelect(["", null])} >
-                                    <div className="border rounded-xl w-48 mt-2 absolute z-10 bg-white h-52 overflow-y-auto py-2">
-                                        {
-                                            constants.size.map((s, i) => <button className="flex items-center px-2 h-9 w-full hover:bg-gray-200 "
-                                                onClick={handleChangeSize(variant.id, s)}
-                                                key={i}
-                                            >
-                                                <div className="px-1 font-bold">{s}</div>
-                                            </button>)
-                                        }
-                                    </div>
-                                </ClickAwayListener>
-                            }
-                        </div>
-                    </div>
-                )
-            }
-            <button className="bg-blue-500 flex text-white font-bold text-lg justify-center items-center rounded-full py-1 pl-4"
-                onClick={handleAddVariant}
+                    )
+                }
+            </div>
+            <button className="bg-blue-500 rounded-full py-1 flex text-white font-bold items-center pr-2 pl-4"
+                onClick={handleAddSize}
             >
-                <img src="icons/Plus.svg" className="w-6 h-6 mx-2" alt="" />
+                <img src="/icons/Plus.svg" className="w-5 h-5 ml-1" />
                 הוספה
             </button>
         </div>
-    </div>
+    )
 }
 
 const Tags = ({ selectedTags, handleModifyTags }: { selectedTags: ITag[], handleModifyTags: () => void }) => {
@@ -254,7 +256,6 @@ const Tags = ({ selectedTags, handleModifyTags }: { selectedTags: ITag[], handle
     const { data: tags, error } = useSWR(`/api/products/tags`, fetcher);
     const [tagSearch, setTagSearch] = useState("");
     const [select, setSelect] = useState(false);
-    const tagInput = useRef();
 
     const handleChange = (e) => {
         setTagSearch(e.target.value);
@@ -293,9 +294,12 @@ const Tags = ({ selectedTags, handleModifyTags }: { selectedTags: ITag[], handle
     return (
         <div className="mx-2">
             <div className="my-2 flex flex-col align-items relative">
-                <div className="border w-96 rounded-lg p-2" ref={tagInput}>
-                    <div className="text-sm font-bold">תגיות</div>
-                    <input type="text" onChange={handleChange} className="outline-none w-11/12" value={tagSearch} />
+                <div className="border w-96 rounded-lg p-2">
+                    <div className="text-sm font-bold flex items-center opacity-70">
+                        <img src="/icons/Tag.svg" className="w-5 h-5 ml-1" />
+                        תגיות
+                    </div>
+                    <input type="text" onChange={handleChange} className="outline-none w-11/12 px-2 font-bold" value={tagSearch} />
                     <button onClick={handleSelect}>
                         <img src="/icons/CaretDown.svg" className="w-4 h-4" />
                     </button>
@@ -320,7 +324,7 @@ const Tags = ({ selectedTags, handleModifyTags }: { selectedTags: ITag[], handle
                 {
                     select &&
                     <ClickAwayListener onClickAway={handleSelect} >
-                        <div className="w-96 max-h-52 border my-1 rounded-lg absolute top-16 z-10 bg-white overflow-y-auto">
+                        <div className="w-96 max-h-52 border my-1 rounded-lg absolute top-15 z-10 bg-white overflow-y-auto">
                             {
                                 tags
                                     .filter((t) => {

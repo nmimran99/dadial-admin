@@ -6,6 +6,7 @@ export default async function handler(
   ) {
     if(req.method === "GET") {
         let result = await fetch(`${process.env.BACKEND_URL}/api/product`);
+        console.log(result)
         result = await result.json();
         res.status(200).json(result);
     }

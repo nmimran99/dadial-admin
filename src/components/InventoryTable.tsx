@@ -1,15 +1,15 @@
-import { IVariant } from "@/types"
+import { IProduct } from "@/types"
 import Image from "next/image"
 
 type IProps = {
-    items: IVariant[]
+    items: IProduct[]
 }
 
-const headers = ["תמונות", 'מק"ט', "שם מוצר", "תיאור מוצר", "צבע", "מידה", "תגיות", "מחיר"]
+const headers = ["תמונות", 'מק"ט', "שם מוצר", "תיאור מוצר", "מידה", "כמות", "תגיות", "מחיר"]
 
 const InventoryTable = ({ items }: IProps) => {
     return (
-        <div className="mx-auto w-max">
+        <div className="mx-auto w-max font-heebo">
             <div className="bg-blue-600 text-white h-12 flex justify-center items-center text-center rounded-lg my-2 font-bold border border-white">
                 {
                     headers.map((header, i) => {
@@ -23,9 +23,9 @@ const InventoryTable = ({ items }: IProps) => {
             </div>
             <div>
                 {
-                    items.map((item: IVariant, i) => {
+                    items.map((item: IProduct, i) => {
                         return (
-                            <div key={i} className="text-center flex text-medium font-bold bg-white h-14 w-full text-center rounded-lg my-2 shadow-lg">
+                            <div key={i} className="text-center flex text-medium font-bold bg-white w-full text-center rounded-lg my-2 shadow-lg">
                                 <div className="flex justify-center items-center h-12 w-32">
                                     <Image src={item.images[0]} width={50} height={50} alt="" />
                                 </div>
@@ -38,14 +38,23 @@ const InventoryTable = ({ items }: IProps) => {
                                 <div className="w-32 items-center flex justify-center">
                                     {item.description}
                                 </div>
-                                <div className="flex justify-center items-center h-12 w-32">
-                                    <div className="w-6 h-6 rounded-full border border-2 border-gray-500 flex justify-center items-center">
-                                        <div className={`w-4 h-4 rounded-full border border-1 border-gray-500`} style={{ backgroundColor: item.color }}></div>
-                                    </div>
-
+                                <div className="w-32 flex flex-col items-center justify-center">
+                                    {
+                                        item.sizes.map((s,i) => 
+                                        <div key={i}>
+                                            {`${s.size}`}
+                                        </div>
+                                    )
+                                    }
                                 </div>
-                                <div className="w-32 flex items-center justify-center">
-                                    {item.size}
+                                <div className="w-32 flex flex-col items-center justify-center">
+                                    {
+                                        item.sizes.map((s,i) => 
+                                        <div key={i}>
+                                            {`${s.quantity}`}
+                                        </div>
+                                    )
+                                    }
                                 </div>
                                 <div className="flex justify-center items-center h-12 w-32">
                                     {

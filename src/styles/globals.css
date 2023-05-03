@@ -7,7 +7,17 @@
     font-family: "Assistant";
     src: url("/fonts/Assistant/Assistant-Regular.ttf") format("truetype");
   }
+  @font-face {
+    font-family: "Heebo";
+    src: url("/fonts/Heebo/static/Heebo-Light.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "Heebo-Bold";
+    src: url("/fonts/Heebo/static/Heebo-Regular.ttf") format("truetype");
+  }
 }
+
+
 
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -16,5 +26,5 @@
 }
 
 body {
-  font-family: "Assistant";
+  font-family: Heebo;
 }

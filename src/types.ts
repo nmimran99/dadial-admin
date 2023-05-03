@@ -12,7 +12,7 @@ export interface IncomingProduct {
     updatedAt: Date,
 }
 
-export interface IVariant {
+export interface IProduct {
     sid: number;
     images: string[];
     title: string;
@@ -20,9 +20,7 @@ export interface IVariant {
     price: number;
     archived: boolean;
     tags: ITag[];
-    color: string;
-    size: string;
-    status: string;
+    sizes: ISize[];
 }
 
 export interface IncomingVariant {
@@ -46,4 +44,10 @@ export interface IncomingTag {
 export interface ITag {
     _id: string;
     text: string;
+}
+
+export interface ISize {
+    _id? : string;
+    size: string;
+    quantity: number;
 }
