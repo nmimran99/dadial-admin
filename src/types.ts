@@ -41,6 +41,14 @@ export interface IncomingTag {
     __v: number;
 }
 
+export interface OutboundProduct {
+    title: string;
+    description: string;
+    images: any[];
+    tags: string[];
+    sizes: ISize[];
+}
+
 export interface ITag {
     _id: string;
     text: string;
